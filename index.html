@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="img/favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="img/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <title>Твой элемент в Genshin Impact</title>
+</head>
+<body>
+    <div class="main">
+
+        <!-- Главный экран -->
+        <div class="app" v-show="showMain">
+            <div class="app__header">
+                <img src="img/logo.png" class="app__logo">
+            </div>
+
+            <div class="app__body">
+                <button class="app__btn" @click="goToQuestions">
+                    <i class="fa fa-play-circle-o" aria-hidden="true"></i>
+                    <div class="app__btn-text">Начать</div>
+                </button>
+                <button class="app__btn" @click="goToAchievements">
+                    <i class="fa fa-trophy" aria-hidden="true"></i>
+                    <div class="app__btn-text">Достижения</div>
+                </button>
+                <button class="app__btn" @click="goToSocial">
+                    <i class="fa fa-user" aria-hidden="true"></i>
+                    <div class="app__btn-text">Автор</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Экран достижений -->
+        <div class="app achievements" v-show="showAchievements">
+            <div class="app__body">
+                <div class="app__body-inner">
+                    <h2 class="app__body-title">
+                        <i class="fa fa-trophy" aria-hidden="true"></i>
+                        Достижения
+                    </h2>
+                    <div class="app__body-top">
+                        <div class="app__card">
+                            <div class="app__card-text">Счет</div>
+                            <div class="app__card-count">{{ totalScore }}</div>
+                        </div>
+                        <div class="app__card">
+                            <div class="app__card-text">Открыто элементов</div>
+                            <div class="app__card-count">{{ openElements }}</div>
+                        </div>
+                        <div class="app__card">
+                            <div class="app__card-text">Всего игр</div>
+                            <div class="app__card-count">{{ totalGames }}</div>
+                        </div>
+                        <div class="app__card">
+                            <div class="app__card-text">Любимый элемент</div>
+                            <div class="app__card-count">{{ favoriteElement }}</div>
+                        </div>
+                    </div>
+                    <div class="app__body-middle">
+                        <div class="app__result"
+                                v-for="(elementName, k) in results"
+                                v-show="showResultElement[k]"
+                                @click="goToResult(k)">
+                            <div class="app__result-score">
+                                <i class="fa fa-star" aria-hidden="true"></i>
+                                <div class="app__result-count">{{ elementName.points }}</div>
+                            </div>
+                            <div class="app__result-name">{{ elementName.element }}</div>
+                            <div class="app__result-amount">{{ totalGame[k] }}</div>
+                        </div>
+                    </div>
+                    <div class="app__body-bottom">
+                        <button class="app__btn btn__back btn__achievement" @click="goToMain">
+                            <i class="fa fa-reply" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div> 
+
+        <!-- Экран вопросов -->
+        <div class="app" v-show="showQuestions">
+            <div class="app__header">
+                <div class="app__header-inner">
+                    <div class="app__count"># {{ number+1 }}</div>
+                    <div class="app__text">{{ questions[number][0] }}</div>
+                </div>
+            </div>
+            <div class="app__body">
+                <button class="app__btn" 
+                        v-for="(answer, i) in questions[number][1]"
+                        @click="nextQuestions(questions[number][2][i])">
+                    <div class="app__btn-text">{{ answer }}</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Раздел "Автор"-->
+        <div class="app" v-show="showSocial">
+            <div class="app__body">
+                <!-- <a href="#" class="app__btn" target="_blank">
+                    <i class="fa fa-instagram" aria-hidden="true"></i>
+                    <div class="app__btn-text">Инстаграм</div>
+                </a> -->
+                <a href="https://t.me/recrashsg" class="app__btn" target="_blank">
+                    <i class="fa fa-telegram" aria-hidden="true"></i>
+                    <div class="app__btn-text">Телеграм</div>
+                </a>
+                <a href="https://vk.com/recrashsg" class="app__btn" target="_blank">
+                    <i class="fa fa-vk" aria-hidden="true"></i>
+                    <div class="app__btn-text">Вконтакте</div>
+                </a>
+                <button class="app__btn btn__back" @click="goToMain">
+                    <i class="fa fa-reply" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Экран с результатом -->
+        <div class="app results" v-bind:data-element="resultElement" v-show="showResult">
+            <div class="app__body">
+                <div class="app__results-inner">
+                    <div class="results__title">{{ results[resultElement].element }}</div>
+                    <div class="results__img">
+                        <img v-bind:src="'img/'+resultElement+'.png'">
+                    </div>
+                    <div class="results__text-box">
+                        <p class="results__text">{{ results[resultElement].description }}</p>
+                        <p class="results__quote">{{ results[resultElement].quote }}</p>
+                        <p class="results__author">{{ results[resultElement].author }}</p>
+                    </div>
+                    <div>
+                        <button v-bind:class="'app__btn btn__back btn__'+resultElement" @click="goToAchievements">
+                            <i class="fa fa-reply" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="js/vue.js"></script>
+    <script src="js/const.js"></script>
+    <script>
+        let app = new Vue({
+            el: '.main',
+            data: {
+                showMain: true,
+                showSocial: false,
+                showAchievements: false,
+                showQuestions: false,
+                showResult: false,
+                number: 0,
+                score: {
+                    'anemo': 0,
+                    'electro': 0,
+                    'pyro': 0,
+                    'gidro': 0,
+                    'cryo': 0,
+                    'geo': 0
+                },
+                totalGame: localStorage.getItem('sc2TotalGame') ? JSON.parse(localStorage.getItem('sc2TotalGame')) : {
+                    'anemo': 0,
+                    'electro': 0,
+                    'pyro': 0,
+                    'gidro': 0,
+                    'cryo': 0,
+                    'geo': 0
+                },
+                totalGames: localStorage.getItem('sc2TotalGames') ? localStorage.getItem('sc2TotalGames') : 0,
+                questions: questions,
+                results: results,
+                resultElement: 'anemo'
+            },
+            methods: {
+                // Показать главную страницу
+                goToMain() {
+                    this.showMain = true
+                    this.showSocial = false
+                    this.showAchievements = false
+                    this.showQuestions = false
+                    this.showResult = false
+                },
+                // Показать страницу "автор"
+                goToSocial() {
+                    this.showMain = false
+                    this.showSocial = true
+                    this.showAchievements = false
+                    this.showQuestions = false
+                    this.showResult = false
+                },
+                // Показать страницу достижений (только если сыграна минимум 1 игра, в другом случае начинается игра)
+                goToAchievements() {
+                    if (this.totalGames > 0) {
+                        this.showMain = false
+                        this.showSocial = false
+                        this.showAchievements = true
+                        this.showQuestions = false
+                        this.showResult = false
+                    }
+                    else {
+                        this.goToQuestions()
+                    }
+                },
+                // Начать игру
+                goToQuestions() {
+                    // Обнулить очки, набранные ранее
+                    this.score = {
+                        'anemo': 0,
+                        'electro': 0,
+                        'pyro': 0,
+                        'gidro': 0,
+                        'cryo': 0,
+                        'geo': 0
+                },
+                    this.showMain = false
+                    this.showSocial = false
+                    this.showAchievements = false
+                    this.showQuestions = true
+                    this.showResult = false
+                },
+                // Показать полученный результат
+                goToResult(element) {
+                    this.showMain = false
+                    this.showSocial = false
+                    this.showAchievements = false
+                    this.showQuestions = false
+                    this.showResult = true
+                    this.resultElement = element
+                },
+                // Показать следующий вопрос. Если это последний вопрос, то закончить игру
+                nextQuestions(answer) {
+                    if (this.number == 10) {
+                        this.number = 0
+                        this.endGame();
+                    } else {
+                        this.number++
+                    }
+                    eval(answer)
+                },
+                // Конец игры
+                endGame() {
+                    // Увеличить счетчик сыгранных игр
+                    this.totalGames++
+                    localStorage.setItem('sc2TotalGames', this.totalGames)
+                    // Анемо
+                    if (this.score.anemo >= this.score.electro && this.score.anemo >= this.score.gidro && this.score.anemo >= this.score.cryo && this.score.anemo >= this.score.pyro && this.score.anemo >= this.score.geo) {
+                        this.goToResult('anemo')
+                        this.totalGame.anemo++
+                    }
+                    // Гидро
+                    else if (this.score.gidro >= this.score.electro && this.score.gidro >= this.score.anemo && this.score.gidro >= this.score.cryo && this.score.gidro >= this.score.pyro && this.score.gidro >= this.score.geo) {
+                        this.goToResult('gidro')
+                        this.totalGame.gidro++
+                    }
+                    // Крио
+                    else if (this.score.cryo >= this.score.electro && this.score.cryo >= this.score.anemo && this.score.cryo >= this.score.gidro && this.score.cryo >= this.score.pyro && this.score.cryo >= this.score.geo) {
+                        this.goToResult('cryo')
+                        this.totalGame.cryo++
+                    }
+                    // Пиро
+                    else if (this.score.pyro >= this.score.electro && this.score.pyro >= this.score.anemo && this.score.pyro >= this.score.gidro && this.score.pyro >= this.score.cryo && this.score.pyro >= this.score.geo) {
+                        this.goToResult('pyro')
+                        this.totalGame.pyro++
+                    }
+                    // Гео
+                    else if (this.score.geo >= this.score.electro && this.score.geo >= this.score.anemo && this.score.geo >= this.score.gidro && this.score.geo >= this.score.cryo && this.score.geo >= this.score.pyro) {
+                        this.goToResult('geo')
+                        this.totalGame.geo++
+                    }
+                    // Электро
+                    else if (this.score.electro >= this.score.geo && this.score.electro >= this.score.anemo && this.score.electro >= this.score.gidro && this.score.electro >= this.score.cryo && this.score.electro >= this.score.pyro) {
+                        this.goToResult('electro')
+                        this.totalGame.electro++
+                    }
+                    localStorage.setItem('sc2TotalGame', JSON.stringify(this.totalGame))
+                }
+            },
+            computed: {
+                // Количество набранных очков за все игры
+                totalScore() {
+                    let score = 0
+                    for (let i in this.totalGame) {
+                        score+=(this.totalGame[i]*results[i].points)
+                    }
+                    return score
+                },
+                // Количество открытых результатов (элементов)
+                openElements() {
+                    let count = 0
+                    for (let i in this.totalGame) {
+                        if (this.totalGame[i] > 0) count++
+                    }
+                    return count
+                },
+                // Любимый элемент -> тот, который получался чаще всего
+                favoriteElement() {
+                    let max = 'anemo'
+                    for (let i in this.totalGame) {
+                        if (this.totalGame[i] > this.totalGame[max]){
+                            max = i
+                        }
+                    }
+                    return results[max].element
+                },
+                // На странице "достижения" выводятся только те элементы, которые были открыты хотя бы 1 раз
+                showResultElement() {
+                    return {
+                        'anemo': this.totalGame.anemo > 0 ? true : false,
+                        'gidro': this.totalGame.gidro > 0 ? true : false,
+                        'electro': this.totalGame.electro > 0 ? true : false,
+                        'cryo': this.totalGame.cryo > 0 ? true : false,
+                        'pyro': this.totalGame.pyro > 0 ? true : false,
+                        'geo': this.totalGame.geo > 0 ? true : false
+                    }
+                }
+            }
+        })
+    </script>
+</body>
+</html>
